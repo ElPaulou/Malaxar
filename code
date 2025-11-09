@@ -1,0 +1,27 @@
+function malaxar {
+    local fast=""
+    local valgrind=0
+    local OPTIND
+
+    while getopts "f v" opt; do
+        case $opt in
+            f) fast="-Ofast -DNDEBUG" ;;
+            v) valgrind=1;;
+            \?) echo "option invalide : -$OPTARG"
+                return 1 ;;
+        esac
+    done
+    
+    shift $((OPTIND - 1))
+
+    case ${1: -1} in
+        'c' ) gcc "$1" -Wall -Wextra $fast -lm -lmylib -g -o a
+        if [ $valgrind -eq 0 ]; then
+            ./a "${@:2}"
+        else
+            valgrind ./a
+        fi
+        rm a;;
+        'y' ) /bin/python3 "$1";;
+    esac
+}
