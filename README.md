@@ -2,10 +2,12 @@
 Simplification of compiling and executing C and python programs
 
 Utilisation :
-A la place de taper cette longue ligne de commande pour compiler le programme et l'exécuter, utilisez la commande malaxar !
+A la place de taper la longue ligne de commande pour compiler le programme et l'exécuter, utilisez la commande malaxar !
 Elle compile le code, l'execute, puis suprimme l'executable à la fin de l'execution.
+
 Syntaxe : malaxar [options] nom_prog.c arg_1 ... arg_n
           malaxar nom_prog.py
+
 Options (uniquement pour le code en C): 
 - -f : ajoute les option -Ofast et -DNDEBUG lors de la compilation, rend l'executable plus rapide et ignore les assert
 - -v : execute le code dans Valgrind
