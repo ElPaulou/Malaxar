@@ -3,10 +3,9 @@ Simplification of compiling and executing C and python programs
 
 Utilisation :
 A la place de taper la longue ligne de commande pour compiler le programme et l'exécuter, utilisez la commande malaxar !
-Elle compile le code, l'execute, puis suprimme l'executable à la fin de l'execution.
+Elle compile le code, l'execute, puis suprimme l'executable à la fin de l'execution. Elle fait automatiquement la différence entre le code python et le code C.
 
-Syntaxe : malaxar [options] nom_prog.c arg_1 ... arg_n
-          malaxar nom_prog.py
+Syntaxe : malaxar [options] nom_prog.c arg_1 ... arg_n (pour le C) / malaxar nom_prog.py (pour le Python)
 
 Options (uniquement pour le code en C): 
 - -f : ajoute les option -Ofast et -DNDEBUG lors de la compilation, rend l'executable plus rapide et ignore les assert
