@@ -3,25 +3,32 @@ function malaxar {
     local valgrind=0
     local OPTIND
 
-    while getopts "f v" opt; do
+    while getopts "f v o h" opt; do
         case $opt in
             f) fast="-Ofast -DNDEBUG" ;;
+            o) fast="-O0";;
             v) valgrind=1;;
-            \?) echo "option invalide : -$OPTARG"
+            h) echo "Options valides :"
+               echo "   -f : Ajoute les options -Ofast et -DNDEBUG lors de la compilation pour un executable plus rapide"
+               echo "   -v : execute le code dans Valgrind"
+               echo "   -o : ajoute l'option -O0 lors de la compilation pour que gcc ne modifie pas le code"
+               echo "   -h : affiche ce message"
+               return 0 ;;
+            \?) echo "option invalide. -h pour la liste des options."
                 return 1 ;;
         esac
     done
     
     shift $((OPTIND - 1))
 
+    local nom_prog=${1/.c/}
     case ${1: -1} in
-        'c' ) gcc "$1" -Wall -Wextra $fast -lm -g -o a
+        'c' ) gcc "$1" -Wall -Wextra $fast -lm -lmylib -g -o $nom_prog
         if [ $valgrind -eq 0 ]; then
-            ./a "${@:2}"
+            ./"$nom_prog" "${@:2}"
         else
-            valgrind ./a
-        fi
-        rm a;;
-        'y' ) /bin/python3 "$1";;
+            valgrind --leak-check=full ./"$nom_prog" "${@:2}"
+        fi ;;
+        'y' ) /bin/python3 $1;;
     esac
 }
