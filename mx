@@ -8,31 +8,45 @@ if [ "$1" == "-v" ]; then
     shift # On retire -v des arguments
 fi
 
-SOURCE_FILE="$1"
+SOURCES=()
+ARGS=()
+COLLECTING_SOURCES=true
 
-# Vérifications de base
-if [ -z "$SOURCE_FILE" ]; then
-    echo "Usage: mx [-v] fichier.c [arg1 arg2 ...]"
+for arg in "$@"; do
+    if [ "$COLLECTING_SOURCES" = true ]; then
+        if [ "$arg" == "--" ]; then
+            COLLECTING_SOURCES=false
+            continue
+        fi
+        
+        if [[ "$arg" == *.c ]]; then
+            if [[ -f "$arg" ]]; then
+                 SOURCES+=("$arg")
+            else
+                 echo "Erreur : Le fichier '$arg' est introuvable."
+                 exit 1
+            fi
+        else
+            COLLECTING_SOURCES=false
+            ARGS+=("$arg")
+        fi
+    else
+        ARGS+=("$arg")
+    fi
+done
+
+if [ ${#SOURCES[@]} -eq 0 ]; then
+    echo "Usage: mx [-v] fichier1.c [fichier2.c ...] [--] [arg1 arg2 ...]"
     exit 1
 fi
 
-if [[ ! -f "$SOURCE_FILE" ]]; then
-    echo "Erreur : Le fichier '$SOURCE_FILE' est introuvable."
-    exit 1
-fi
-
-# On vérifie que c'est bien un fichier .c pour extraire le nom de l'exécutable
-if [[ "$SOURCE_FILE" != *.c ]]; then
-    echo "Erreur : Le fichier doit avoir l'extension .c"
-    exit 1
-fi
-
-# Nom de l'exécutable : on retire l'extension .c
-OUTPUT_BIN="${SOURCE_FILE%.c}"
+# Nom de l'exécutable : basé sur le premier fichier source
+FIRST_SOURCE="${SOURCES[0]}"
+OUTPUT_BIN="${FIRST_SOURCE%.c}"
 
 # 1. Compilation
 # gcc fichier.c -o fichier -Wall -Wextra -O0 -g3 -lm
-gcc "$SOURCE_FILE" -o "$OUTPUT_BIN" -Wall -Wextra -O0 -g3 -lm
+gcc "${SOURCES[@]}" -o "$OUTPUT_BIN" -Wall -Wextra -O0 -g3 -lm
 
 # Si la compilation échoue, on arrête tout
 if [ $? -ne 0 ]; then
@@ -40,14 +54,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# On décale les arguments pour ne garder que ceux destinés au programme (arg1 arg2 etc)
-shift
-
 # 2. Exécution
 if [ "$USE_VALGRIND" = true ]; then
     # Avec Valgrind
-    valgrind --quiet --leak-check=full --track-origins=yes --show-leak-kinds=all "./$OUTPUT_BIN" "$@"
+    valgrind --quiet --leak-check=full --track-origins=yes --show-leak-kinds=all "./$OUTPUT_BIN" "${ARGS[@]}"
 else
     # Sans Valgrind (si option -v présente)
-    "./$OUTPUT_BIN" "$@"
+    "./$OUTPUT_BIN" "${ARGS[@]}"
 fi
