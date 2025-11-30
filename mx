@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Gestion de l'option -v (doit être le premier argument pour être pris en compte par le script)
+USE_VALGRIND=true
+
+if [ "$1" == "-v" ]; then
+    USE_VALGRIND=false
+    shift # On retire -v des arguments
+fi
+
+SOURCES=()
+ARGS=()
+COLLECTING_SOURCES=true
+
+for arg in "$@"; do
+    if [ "$COLLECTING_SOURCES" = true ]; then
+        if [ "$arg" == "--" ]; then
+            COLLECTING_SOURCES=false
+            continue
+        fi
+        
+        if [[ "$arg" == *.c ]]; then
+            if [[ -f "$arg" ]]; then
+                 SOURCES+=("$arg")
+            else
+                 echo "Erreur : Le fichier '$arg' est introuvable."
+                 exit 1
+            fi
+        else
+            COLLECTING_SOURCES=false
+            ARGS+=("$arg")
+        fi
+    else
+        ARGS+=("$arg")
+    fi
+done
+
+if [ ${#SOURCES[@]} -eq 0 ]; then
+    echo "Usage: mx [-v] fichier1.c [fichier2.c ...] [--] [arg1 arg2 ...]"
+    exit 1
+fi
+
+# Nom de l'exécutable : basé sur le premier fichier source
+FIRST_SOURCE="${SOURCES[0]}"
+OUTPUT_BIN="${FIRST_SOURCE%.c}"
+
+# 1. Compilation
+# gcc fichier.c -o fichier -Wall -Wextra -O0 -g3 -lm
+gcc "${SOURCES[@]}" -o "$OUTPUT_BIN" -Wall -Wextra -O0 -g3 -lm
+
+# Si la compilation échoue, on arrête tout
+if [ $? -ne 0 ]; then
+    echo "Échec de la compilation."
+    exit 1
+fi
+
+# 2. Exécution
+if [ "$USE_VALGRIND" = true ]; then
+    # Avec Valgrind
+    valgrind --quiet --leak-check=full --track-origins=yes --show-leak-kinds=all "./$OUTPUT_BIN" "${ARGS[@]}"
+else
+    # Sans Valgrind (si option -v présente)
+    "./$OUTPUT_BIN" "${ARGS[@]}"
+fi
