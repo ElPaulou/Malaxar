@@ -3,7 +3,7 @@ function malaxar {
     local valgrind=0
     local OPTIND
 
-    while getopts "f v o h" opt; do
+    while getopts "f v o h l" opt; do
         case $opt in
             f) fast="-Ofast -DNDEBUG" ;;
             o) fast="-O0";;
@@ -23,12 +23,13 @@ function malaxar {
 
     local nom_prog=${1/.c/}
     case ${1: -1} in
-        'c' ) gcc "$1" -Wall -Wextra $fast -lm -lmylib -g -o $nom_prog
+        'c' ) gcc "$1" -Wall -Wextra $fast -lm -g -o $nom_prog
         if [ $valgrind -eq 0 ]; then
             ./"$nom_prog" "${@:2}"
         else
-            valgrind --leak-check=full ./"$nom_prog" "${@:2}"
-        fi ;;
+            valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./"$nom_prog" "${@:2}"
+        fi
+        rm $nom_prog ;;
         'y' ) /bin/python3 $1;;
     esac
 }
