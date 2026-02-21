@@ -18,3 +18,7 @@ Installation :
 2. ouvrez le ficher .bash_aliases ou créez-le s'il n'existe pas
 3. copiez-collez le code dans ce fichier
 4. relancez le terminal ou tapez source .bashrc
+
+(Sinon, un petit git clone et l'ajout de ". ~/chemain/vers/fichier dans le bashrc marche très bien)
+
+Et parce que je suis super sympa, une petite fonction pour ouvrir facilement les TP/DM d'info, la fonction go (me remerciez pas, ça me fait plaisir)

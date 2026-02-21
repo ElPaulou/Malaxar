@@ -33,3 +33,37 @@ function mx {
         'y' ) /bin/python3 $1;;
     esac
 }
+
+function go {
+    while getopts "h" opt; do
+        case $opt in
+            h) echo "Utilisation : go tp11, go dm2..."
+               echo "Va dans le dossier ~/Documents/prepa/info, puis dans DM/ si le premier argument commence par dm ou DM, TP/ si ça commence par tp ou TP."
+               echo "Ouvre le dossier donné en argument (en mettant des majuscules) dans VS Code, puis s'il y a un .pdf l'ouvre (il faut qu'il ait le même nom que le dossier)."
+               return 0 ;;
+            \?) echo "option invalide. -h pour la liste des options."
+                return 1 ;;
+        esac
+    done
+    
+    shift $((OPTIND - 1))
+    cd ~/Documents/prepa/info
+    local type=${1:0:2}
+    local nb=${1:2}
+    case $type in
+        'tp') cd TP/
+              code "TP$nb"
+              cd TP$nb
+              if [ -f "TP$nb.pdf" ]; then
+                  evince "TP$nb.pdf" &
+              fi ;;
+        'dm') cd DM/
+              code "DM$nb"
+              cd DM$nb
+              if [ -f "DM$nb.pdf" ]; then
+                  evince "DM$nb.pdf" &
+              fi ;;
+        \?) echo "Argument de la mauvaise forme. -h pour l'aide."
+            return 1;;
+    esac
+}
