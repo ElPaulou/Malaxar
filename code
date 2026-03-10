@@ -69,14 +69,30 @@ function go {
 }
 
 function push {
-  if [ $# -eq 1 ]; then
+    local repo="main"
+    local change=0
+    while getopts "r" opt; do
+        case $opt in
+            r) repo=$1
+               change=1 ;;
+            \?) echo "option invalide. -h pour la liste des options."
+                return 1 ;;
+        esac
+    done
+    
+    shift $((OPTIND - 1))
+    if [ $# -eq 0 ]; then
+        echo "Il faut le commentaire !"
+        return 1
+    fi
     git add .
-    git commit -m $1
+    if [ $change -eq 0 ]; then
+        git commit -m $1
+    else
+        git commit -m $2
+    fi
     git push
     return 0
-  fi
-  echo "Il faut le commentaire !"
-  return 1
 }
 
 alias pull="git pull"
