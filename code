@@ -124,9 +124,9 @@ function colle {
     done
     let num=$(($num-1))
     evince sem${num}.pdf & disown
+    kill -9 $PPID
 }
 
-alias pull="git pull"
 alias pacman="sudo pacman"
 alias update="pacman -Syu && paru -Syu"
 alias synchroniser="rclone copy ~/Documents test:Documents/"
