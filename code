@@ -27,7 +27,7 @@ function mx {
         if [ $valgrind -eq 0 ]; then
             ./"$nom_prog"
         else
-            valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./"$nom_prog"
+            valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./"$nom_prog" && rm vgcore.*
         fi
         rm $nom_prog ;;
         'y' ) /bin/python3 $1;;
