@@ -1,13 +1,15 @@
 function mx {
+    local exec=1
     local fast="-Ofast"
     local valgrind=0
     local OPTIND
 
-    while getopts "f v o h l" opt; do
+    while getopts "f v o h c" opt; do
         case $opt in
             f) fast="-Ofast -DNDEBUG" ;;
             o) fast="-O0";;
             v) valgrind=1;;
+            c) exec=0;
             h) echo "Options valides :"
                echo "   -f : Ajoute les options -Ofast et -DNDEBUG lors de la compilation pour un executable plus rapide"
                echo "   -v : execute le code dans Valgrind"
@@ -22,16 +24,15 @@ function mx {
     shift $((OPTIND - 1))
 
     local nom_prog=${1/.c/}
-    case ${1: -1} in
-        'c' ) gcc "${@:1}" -Wall -Wextra $fast -lm -g -o $nom_prog
+    gcc "${@:1}" -Wall -Wextra $fast -lm -g -o $nom_prog
+    if [ $exec -eq 1]; then
         if [ $valgrind -eq 0 ]; then
             ./"$nom_prog"
         else
             valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./"$nom_prog" && rm vgcore.*
         fi
-        rm $nom_prog ;;
-        'y' ) /bin/python3 $1;;
-    esac
+        rm $nom_prog
+    fi
 }
 
 function go {

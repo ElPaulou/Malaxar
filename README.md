@@ -11,6 +11,7 @@ Options (uniquement pour le code en C):
 - -f : ajoute les option -Ofast et -DNDEBUG lors de la compilation, rend l'executable plus rapide et ignore les assert
 - -o : ajoute l'option -O0 lors de la compilation, ne modifie pas le code lors de la compilation
 - -v : execute le code dans Valgrind
+- -c : ne fait que compiler le programme
 - -h : liste des options
 
 Installation :
