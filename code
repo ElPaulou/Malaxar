@@ -25,7 +25,7 @@ function mx {
 
     local nom_prog=${1/.c/}
     gcc "${@:1}" -Wall -Wextra $fast -lm -g -o $nom_prog
-    if [ $exec -eq 1]; then
+    if [ $exec -eq 1 ]; then
         if [ $valgrind -eq 0 ]; then
             ./"$nom_prog"
         else
