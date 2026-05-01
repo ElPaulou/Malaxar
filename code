@@ -41,13 +41,13 @@ function mx {
         rm $nom_prog
     fi
 }
-
+# push "ajout de la possibilité d'accéder aux tp de physique avec go"
 function go {
     while getopts "h" opt; do
         case $opt in
-            h) echo "Utilisation : go tp 11, go dm 2..."
-               echo "Va dans le dossier ~/Documents/prepa/info, puis dans DM/ si le premier argument commence par dm, TP/ si ça commence par tp."
+            h) echo "Utilisation : go tp 11, go dm 2, go tp_p 17..."
                echo "Ouvre le dossier donné en argument (en mettant des majuscules) dans VS Code, puis s'il y a un .pdf l'ouvre (il faut qu'il ait le même nom que le dossier)."
+               echo "tp correspond aux tp d'info, tp_p à ceux de physique"
                return 0 ;;
             \?) echo "option invalide. -h pour la liste des options."
                 return 1 ;;
@@ -56,9 +56,8 @@ function go {
     
     shift $((OPTIND - 1))
 
-    cd ~/Documents/prepa/info
     local type=$1
-    local nb="rien"
+    local nb=""
     if [ $# -eq 1 ]; then
         if [ $type = "tp" ]; then
             nb=$(cat ~/.fct/var/der_TP.txt)
@@ -71,24 +70,39 @@ function go {
     fi
 
     case $type in
-        'tp') cd TP/
-              if [ -d TP$nb ]; then
-                code "TP$nb"
-                cd TP$nb
-                if [ -f "TP$nb.pdf" ]; then
-                    evince "TP$nb.pdf" & disown
-                fi
-              else
-                mkdir "TP$nb"
-                code TP$nb
-                cd TP$nb
-              fi ;;
-        'dm') cd DM/
-              code "DM$nb"
-              cd DM$nb
-              if [ -f "DM$nb.pdf" ]; then
-                  evince "DM$nb.pdf" & disown
-              fi ;;
+        'tp')
+            z ~/Documents/prepa/info/TP/
+            if [ -d TP$nb ]; then
+            else mkdir "TP$nb"
+            fi
+                
+            code "TP$nb"
+            z TP$nb
+            if [ -f "TP$nb.pdf" ]; then
+                evince "TP$nb.pdf" & disown
+            fi;;
+        'tp_p')
+            z ~/Documents/prepa/physique/TP/
+            if [ -d TP$nb ]; then
+            else mkdir "TP$nb"
+            fi
+                
+            code "TP$nb"
+            z TP$nb
+            if [ -f "TP$nb.pdf" ]; then
+                evince "TP$nb.pdf" & disown
+            fi;;
+        'dm')
+            z ~/Documents/prepa/info/DM/
+            if [ -d DM$nb ]; then
+            else mkdir "TP$nb"
+            fi
+
+            code "DM$nb"
+            z DM$nb
+            if [ -f "DM$nb.pdf" ]; then
+                evince "DM$nb.pdf" & disown
+            fi ;;
         \?) echo "Argument de la mauvaise forme. -h pour l'aide."
             return 1;;
     esac
