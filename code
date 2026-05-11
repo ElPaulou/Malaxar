@@ -1,21 +1,21 @@
 function mx {
     local exec=1
-    local fast="-Ofast -Wall -Wextra -march=native -mtune=native -flto"
+    local fast="-O3"
     local valgrind=0
-    local args=""
+    local args="0"
     local OPTIND
 
-    while getopts "f v o c a h" opt; do
+    while getopts "f o v c a h" opt; do
         case $opt in
-            f) fast="-Ofast -DNDEBUG -Wall -Wextra -march=native -mtune=native -flto" ;;
+            f) fast="-DNDEBUG" ;;
             o) fast="-O0";;
             v) valgrind=1;;
             c) exec=0;;
-            a) read -p "Saisir le ou les argument(s) : " args;;
+            a) args="1";;
             h) echo "Options valides :"
-               echo "   -f : Ajoute -DNDEBUG lors de la compilation"
-               echo "   -v : execute le code dans Valgrind"
-               echo "   -o : ajoute l'option -O0 lors de la compilation pour que gcc ne modifie pas le code"
+               echo "   -f : Ajoute -DNDEBUG lors de la compilation (uniquement pour C)"
+               echo "   -v : execute le code dans Valgrind (uniquement pour C)"
+               echo "   -o : remplace -03 par -O0 lors de la compilation pour que gcc ne modifie pas le code"
                echo "   -c : ne fait que compiler"
                echo "   -a : passe des arguments lors de l'execution. Metrre des guillemets autour des arguments s'il y en a plusieurs"
                echo "   -h : affiche ce message"
@@ -27,19 +27,41 @@ function mx {
     
     shift $((OPTIND - 1))
 
-    local nom_prog=${1/.c/}
-    gcc "${@:1}" $fast -lm -g -o $nom_prog
-    if [ $exec -eq 1 ]; then
-        if [ $valgrind -eq 0 ]; then
-            ./"$nom_prog" $args
-        else
-            valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./"$nom_prog" $args
-            if [ -f vgcore.* ]; then
-                rm vgcore.*
-            fi
-        fi
-        rm $nom_prog
+    if [ args="1" ]; then
+        echo "Saisir le ou les argument(s) : "
+        read args
+    else
+        args=""
     fi
+
+    case ${1: -1} in
+        'c')
+            local nom_prog=${1/.c/}
+            gcc -Wall -Wextra "${@:1}" $fast -march=native -mtune=native -flto -lm -g -o $nom_prog
+            if [ $exec -eq 1 ]; then
+                if [ $valgrind -eq 0 ]; then
+                    ./"$nom_prog" $args
+                else
+                    valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./"$nom_prog" $args
+                    if [ -f vgcore.* ]; then
+                        rm vgcore.*
+                    fi
+                fi
+                rm $nom_prog
+            fi
+        ;;
+        'l')
+            local nom_prog=${1/.ml/}
+            ocamlopt -O3 -inline 40 -nodynlink -noassert -ccopt "-O3 -march=native -mtune=native -flto" -o nom_prog $1
+            if [ exec -eq 1 ]; then
+                ./nom_prog $args
+                rm nom_prog
+            fi
+            ;;
+        ?)
+            echo "mauvais type de fichier"
+            return 1;;
+    esac
 }
 
 function go {
@@ -151,6 +173,10 @@ function colle {
     fi
     evince sem${num}.pdf & disown
     kill -9 $PPID
+}
+
+function pdf {
+    evince $1 & disown
 }
 
 alias pacman="sudo pacman"
